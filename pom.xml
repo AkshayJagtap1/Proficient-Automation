@@ -1,0 +1,159 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>PROFICIENT</groupId>
+  <artifactId>PROFICIENT</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+ <properties>
+  <timestamp>${maven.build.timestamp}</timestamp>
+ <maven.build.timestamp.format>yyyy_MM_dd_HH_mm</maven.build.timestamp.format>
+</properties>
+<dependencies>
+<!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-java -->
+<!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-java -->
+<dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-java</artifactId>
+    <version>4.7.4</version>
+</dependency>
+
+
+<!-- https://mvnrepository.com/artifact/junit/junit -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.apache.poi</groupId>
+    <artifactId>poi</artifactId>
+    <version>5.2.2</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.poi</groupId>
+    <artifactId>poi-ooxml</artifactId>
+    <version>5.2.2</version>
+</dependency>
+<!--<dependency>
+   <groupId>org.apache.poi</groupId>
+   <artifactId>poi-ooxml</artifactId>
+   <version>3.9</version>
+</dependency>-->
+<!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-junit -->
+<!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-junit -->
+<dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-junit</artifactId>
+    <version>4.7.4</version>
+    <scope>test</scope>
+</dependency>
+
+
+
+
+
+
+<dependency>
+<groupId>org.seleniumhq.selenium</groupId>
+    <artifactId>selenium-java</artifactId>
+    <version>3.5.3</version>
+</dependency>
+
+<dependency>
+   <groupId>com.aventstack</groupId>
+   <artifactId>extentreports-cucumber4-adapter</artifactId>
+   <version>1.0.12</version>
+   <scope>test</scope>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.aventstack/extentreports -->
+<dependency>
+    <groupId>com.aventstack</groupId>
+    <artifactId>extentreports</artifactId>
+    <version>4.1.7</version>
+</dependency>
+
+<dependency>
+		<groupId>net.masterthought</groupId>
+		<artifactId>cucumber-reporting</artifactId>
+		<version>1.0.0</version>
+	</dependency>
+	
+	<dependency>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-surefire-plugin</artifactId>
+  <version>3.0.0-M5</version>
+  <type>maven-plugin</type>
+</dependency>
+
+<dependency>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <version>3.10.0</version>
+  <type>maven-plugin</type>
+</dependency>
+	</dependencies>
+	<build>
+    <plugins>
+      <!--  <plugin>
+            <groupId>net.masterthought</groupId>
+            <artifactId>maven-cucumber-reporting</artifactId>
+            <version>2.8.0</version>
+            <executions>
+                <execution>
+                    <id>execution</id>
+                    <phase>test</phase>
+                    <goals>
+                    <goal>generate</goal>
+                    </goals>
+                    <configuration>
+                    <projectName>DMS</projectName>
+                    <outputDirectory>report/cucumber-reports/advanced-reports</outputDirectory>
+                    <cucumberOutput>report/cucumber-reports/cucumber.json</cucumberOutput>
+                    <skippedFails>true</skippedFails>
+                    <enableFlashCharts>true</enableFlashCharts>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>-->
+        <plugin>
+            <groupId>net.masterthought</groupId>
+            <artifactId>maven-cucumber-reporting</artifactId>
+            <version>2.8.0</version>
+            <executions>
+                <execution>
+                    <id>execution</id>
+                    <phase>test</phase>
+                    <goals>
+                    <goal>generate</goal>
+                    </goals>
+                    <configuration>
+                    <projectName>PROFICIENT</projectName>
+                    <outputDirectory>Reports/PROFICIENT-Report_${maven.build.timestamp}</outputDirectory>
+                    <cucumberOutput>Reports/cucumber.json</cucumberOutput>
+                    <skippedFails>true</skippedFails>
+                    <enableFlashCharts>true</enableFlashCharts>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.0</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.0.0-M5</version>
+    <configuration>
+        <testFailureIgnore>true</testFailureIgnore>
+    </configuration>
+</plugin>
+</plugins>
+</build>
+</project>

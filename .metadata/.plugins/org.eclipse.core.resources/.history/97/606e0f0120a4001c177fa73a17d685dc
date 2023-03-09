@@ -1,0 +1,548 @@
+package StepDefinitions;
+import java.io.FileReader;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Assert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import StepDefinitions.Utilities.PropertyLoader;
+import cucumber.api.Scenario;
+import io.cucumber.datatable.dependency.com.fasterxml.jackson.databind.JsonNode;
+import io.cucumber.datatable.dependency.com.fasterxml.jackson.databind.ObjectMapper;
+import io.cucumber.java.After;
+import io.cucumber.java.AfterStep;
+import io.cucumber.java.Before;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+
+
+public class Steps extends Generic{
+	
+   // public static WebDriver driver = Hooks.driver;
+	/* private boolean isChecked;
+	public WebDriver driver;
+   
+	
+    @Given("user launches browser {string}")
+    public WebDriver user_launches_browser(String browser) {
+       if(browser.equalsIgnoreCase("chrome"))
+       {
+    	   System.setProperty("webdriver.chrome.driver",System.getProperty("user.dir")+"\\drivers\\chromedriver.exe");
+    	   
+       
+       driver=new ChromeDriver();
+       driver.manage().window().maximize(); 
+       }
+       else if(browser.equalsIgnoreCase("ie"))
+       {
+    	   System.setProperty("webdriver.ie.driver",System.getProperty("user.dir")+"\\drivers\\chromedriver.exe");
+    	   driver=new InternetExplorerDriver();
+           driver.manage().window().maximize(); 
+       }
+       else if(browser.equalsIgnoreCase("ie"))
+       {
+    	   System.setProperty("webdriver.gecko.driver",System.getProperty("user.dir")+"\\drivers\\chromedriver.exe");
+    	   driver=new FirefoxDriver();
+           driver.manage().window().maximize(); 
+       }
+       
+       return driver;
+    }
+
+    @AfterStep
+	  public void takeScreenshot(Scenario scenario)
+	  {
+		  
+		  final byte [] screenshots = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+		  scenario.embed(screenshots, "image/png");
+		/*String screenshotName = scenario.getName().replaceAll(" ", "_");
+			try {
+				//This takes a screenshot from the driver at save it to the specified location
+				TakesScreenshot ts = (TakesScreenshot) driver;
+				File sourcePath = ts.getScreenshotAs(OutputType.FILE);
+				
+				//Building up the destination path for the screenshot to save
+				//Also make sure to create a folder 'screenshots' with in the cucumber-report folder
+				File destinationPath = new File(System.getProperty("user.dir") + "target/cucumber-reports/advanced-reports/screenshots/" + screenshotName + ".png");
+				
+				//Copy taken screenshot from source location to destination location
+				Files.copy(sourcePath, destinationPath);   
+
+				//This attach the specified screenshot to the test
+				//Reporter.addScreenCaptureFromPath(destinationPath.toString());
+			} 
+			catch (IOException e) {
+			} 
+	  }
+	 @After
+	 public void tearDown(Scenario scenario)
+	 {
+		 if (scenario.isFailed()) {
+		        System.out.println("Scenario is Failled Taking ScreenShot...!!!");
+		        TakesScreenshot ts = (TakesScreenshot) driver;
+		        byte[] screenshot = ts.getScreenshotAs(OutputType.BYTES);
+		        scenario.embed(screenshot, "image/png");
+		 }
+		 driver.quit();
+		
+		     
+	 }
+		 
+		 
+	  
+	@Given("user launches application {string}")
+	  public void user_launches_application(String envText) throws Throwable {
+		
+	      String url= readJsonEnvironmentFile(envText);
+	      try
+	      {
+	    	  driver.get(url);
+	    	  System.out.println("Application Launched" +url);
+	      }
+	      catch(Exception e)
+	      {
+	    	  System.out.println("Exception" + e.getMessage());
+	    	  e.printStackTrace();
+	      }
+	      
+	  }
+	
+	 
+	
+	 
+	 
+	  @Given("user loads proprty file {string}") 
+	public  void user_loads_proprty_file(String filepath) throws Throwable{
+		  
+		  PropertyLoader.getInstance().loadRunProperties(filepath);
+	  
+	}
+	  
+	  
+	  
+
+	  @Given("user provides {string},{string} and logs into application")
+	  public void user_provides_and_logs_into_application(String user, String pass) throws Throwable {
+	      try
+	      {
+	    	  user = readJsonEnvironmentFile(user);
+	    	  pass = readJsonEnvironmentFile(pass);
+	    	  WebDriverWait wt = new WebDriverWait(driver,6);
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.id("mat-input-0"))).sendKeys(user);
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.className("signinbtn"))).click();
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@name='password']"))).sendKeys(pass);
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.className("signinbtn"))).click();
+	    }
+	      catch(org.openqa.selenium.TimeoutException e)
+	      {
+	    	  System.out.println("Already logged in"); 
+	      }
+	  }
+	  //methods to read env file
+	  public static String readJsonEnvironmentFile(String token) throws Throwable
+	  {
+	  FileReader fileread = null;
+	 
+	  JsonNode jsonNode = null;
+	  String data = null;
+	  try
+	  {
+		  fileread = new FileReader("./Resources/"+PropertyLoader.getInstance().getProperty("File"));
+		  jsonNode = new ObjectMapper().readTree(fileread).get(PropertyLoader.getInstance().getProperty("Environment"));
+	  
+	       if(token.contains("."))
+	       {
+	    	   String tokenArray[]=token.split("\\.");
+	    	   if (tokenArray.length==3)
+	    	   
+	    		   data= jsonNode.get(tokenArray[0]).get(tokenArray[1]).get(tokenArray[2]).toString().replaceAll("\"", "");
+	    	  
+	    	   else
+	    	   {
+	    		   data = jsonNode.get(tokenArray[0]).get(tokenArray[1]).toString();
+	    		   if(!data.contains(","))
+	    			   data = data.replaceAll("\"", "");
+	    	   }
+	    	   
+	    		   
+	       }
+	       else
+	       {
+	    	   data = jsonNode.get(token).textValue();
+	       }
+	       if (data == null)
+	       {
+	    	   System.out.println("URL is NULL");
+	       }
+	  }
+	  catch(Exception e)
+      {
+    	  System.out.println("Exception" + e.getMessage());
+    	  e.printStackTrace();
+      }
+	  finally
+	  {
+		  fileread.close();
+	  }
+	   return data;
+	  }*/
+	  
+		@Then("Click on element {string}")
+		public void click_on_element(String element) {
+			//JavascriptExecutor js = (JavascriptExecutor) driver;
+			//js.executeScript("window.scrollBy(0,-250)");
+			  WebDriverWait wt = new WebDriverWait(driver,6);
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.xpath(element))).click();
+			driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			
+			
+		}
+		 @Then("Verify user is able to create Role")
+		   public void verify_user_is_able_to_create_role() {
+			   
+			   WebElement RoleCode=driver.findElement(By.xpath("//input[@placeholder='Role Code']"));
+			   RoleCode.click();
+			   Random random=new Random();
+			   int randomInt=random.nextInt(10000);
+			   RoleCode.sendKeys("TestAutoSales" + randomInt);
+			   String s=Integer.toString(randomInt);
+			   String ExpectedRole ="TestAutoSales".toString().concat(s);
+			   WebElement RoleDesc=driver.findElement(By.xpath("//input[@placeholder='Role Description']"));
+			   RoleDesc.click();
+			   RoleDesc.sendKeys("Sales Advisor Auto");
+			   driver.findElements(By.xpath("//img[@src='../../../../assets/icons/arrow-right.svg']")).get(1).click();
+			   
+			    //wt.until(ExpectedConditions.elementToBeClickable (By.xpath("//label[text()=' Manage Master ']"))).click();
+			   driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			   JavascriptExecutor jse = (JavascriptExecutor)driver;
+			   
+			    WebElement element1=driver.findElement (By.xpath("//label[text()=' Manage Master ']"));
+			     jse.executeScript("arguments[0].scrollIntoView()", element1);
+			 	 element1.click();
+			 	 WebElement element=driver.findElement(By.xpath("//label[text()=' Manage Vehicle Colour ']"));
+			     jse.executeScript("arguments[0].scrollIntoView()", element);
+			 	 element.click();
+			 	   driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			 	//WebDriverWait wt = new WebDriverWait(driver,10);
+			 	  WebElement Save=driver.findElement (By.xpath("//button[@class='greenbtn h-30' and text()=' Save ']"));
+			 	 Actions builder = new Actions(driver);
+				  builder.moveToElement(Save).build().perform();
+				  Save.click();
+			   
+			    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			    driver.navigate().refresh();
+			    String ActualRole=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[1]")).getText();
+			    Assert.assertEquals("Role is not matching", ExpectedRole, ActualRole);
+			    
+			 	 
+			 	//label[text()=' Manage Master '
+			 	 /*WebElement element1=driver.findElement (By.xpath("//label[text()=' Manage Vehicle Warranty ']"));
+			     jse.executeScript("arguments[0].scrollIntoView()", element1);
+			 	 element1.click();*/
+			 	/*WebElement element2=driver.findElement (By.xpath("//label[text()=' Manage Vehicle Model ']"));
+			 	jse.executeScript("arguments[0].scrollIntoView()", element2);
+			 	 element2.click();
+			 	WebElement element3=driver.findElement (By.xpath("//label[text()=' Manage Vehicle Pricing ']"));
+			 	jse.executeScript("arguments[0].scrollIntoView()", element3);
+			 	 element3.click();
+			 	WebElement element4=driver.findElement  (By.xpath("//label[text()=' Manage Vehicle Pricing OD Accessory ']"));
+			 	jse.executeScript("arguments[0].scrollIntoView()", element4);
+			 	 element4.click();
+			 	WebElement element5=driver.findElement  (By.xpath("//label[text()=' Manage Vehicle Series ']"));
+			 	jse.executeScript("arguments[0].scrollIntoView()", element5);
+			 	 element5.click();*/
+			 	
+			    
+			    
+		 }
+		
+		 
+		 @Given("Verify user is able to search element {string} in searchbox with {string}")
+		 public void verify_user_is_able_to_search_element_in_searchbox_with(String searchElement, String ExpectedSearchElement) {
+			  String ActualSearchKeyword= driver.findElement(By.xpath(searchElement)).getText();
+			     //String ActualSearchKeyword="search";
+			     driver.findElement(By.xpath("//*[@data-placeholder='Search here']")).sendKeys(ActualSearchKeyword);
+			     driver.manage().timeouts().implicitlyWait(1000, TimeUnit.SECONDS);
+			     String ExpectedSearchKeyword=driver.findElement(By.xpath(ExpectedSearchElement)).getText();
+			     Assert.assertEquals("search result is not matching with created data", ExpectedSearchKeyword, ActualSearchKeyword); 
+		 }
+
+		 
+		 @Given("Verify user is able to Edit the created role")
+		 public void verify_user_is_able_to_Edit_the_created_role() {
+			  
+			  driver.navigate().refresh();
+			  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			 WebElement EditIcon= driver.findElements(By.xpath("//*[@src='../../../../../assets/icons/more.svg']")).get(0);
+			 Actions builder = new Actions(driver);
+			  builder.moveToElement(EditIcon).build().perform();
+			  EditIcon.click();
+			  WebElement EditButton= driver.findElement(By.xpath("//button[@role='menuitem']"));
+			  builder.moveToElement(EditButton).build().perform();
+			  EditButton.click();
+			   //wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[1]/div[2]//button"))).click();
+			
+			  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			 
+			   driver.findElements(By.xpath("//img[@src='../../../../assets/icons/arrow-right.svg']")).get(1).click();
+			   driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			   WebElement Role1=driver.findElement(By.xpath("//label[text()=' Manage Vehicle Warranty ']"));
+			    JavascriptExecutor jse = (JavascriptExecutor)driver;
+			     jse.executeScript("arguments[0].scrollIntoView()", Role1);
+			     Role1.click();
+			     WebDriverWait wt = new WebDriverWait(driver,15);
+				 	  wt.until(ExpectedConditions.elementToBeClickable (By.xpath("//button[@class='greenbtn h-30' and text()=' Save ']"))).click();
+				 	 driver.navigate().refresh();
+				 	 
+				 	  EditIcon= driver.findElements(By.xpath("//*[@src='../../../../../assets/icons/more.svg']")).get(0);
+					  builder = new Actions(driver);
+					  builder.moveToElement(EditIcon).build().perform();
+					  EditIcon.click();
+					   EditButton= driver.findElement(By.xpath("//button[@role='menuitem']"));
+					  builder.moveToElement(EditButton).build().perform();
+					  EditButton.click();
+					  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+					   driver.findElements(By.xpath("//img[@src='../../../../assets/icons/arrow-right.svg']")).get(1).click();
+					  
+					   driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+					   
+			 	    
+			 
+		 }
+		 
+		 @Then("Verify user is able to create Group")
+		 public void verify_user_is_able_to_create_group() {
+		 	 WebElement Role=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[1]"));
+		 	 driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		 	 driver.navigate().refresh();
+		 	 driver.findElement(By.xpath("//span[text()='Manage Group']")).click();
+		 	 driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		 	 Role=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[1]"));
+		 	 String RoletoGroup=Role.getText();
+		 	 WebElement GroupName=driver.findElement(By.xpath("//input[@placeholder='Group Name']"));
+		 	  GroupName.click();
+		 	  GroupName.sendKeys(RoletoGroup);
+			 
+		 	   driver.findElement(By.xpath("//input[@placeholder='Group Description']")).sendKeys("Sales Advisor Auto");
+		 	  WebDriverWait wt = new WebDriverWait(driver,15);
+		 	  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='ng-arrow-wrapper']"))).click();
+		 	  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='ng-option-label ng-star-inserted' and text()='SALES PLANNING']"))).click();
+		 	   driver.findElement(By.xpath("//button[@class='greenbtn h-30' and text()=' Save ']")).click();
+		 	   String ActualGroup=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[1]")).getText();
+			    Assert.assertEquals("Group is not matching", RoletoGroup, ActualGroup);
+			    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			    driver.navigate().refresh();
+		 	   }
+		 
+		 @Given("Verify user is able to Edit the created Group")
+		 public void verify_user_is_able_to_Edit_the_created_Group() {
+			 
+			  String ExpectedGroupDesc="Sales Advisor Auto_updated";
+			 driver.navigate().refresh();
+			  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			 WebElement EditIcon= driver.findElements(By.xpath("//*[@src='../../../../../assets/icons/more.svg']")).get(0);
+			 Actions builder = new Actions(driver);
+			  builder.moveToElement(EditIcon).build().perform();
+			  EditIcon.click();
+			  WebElement EditButton= driver.findElement(By.xpath("//button[@role='menuitem']"));
+			  builder.moveToElement(EditButton).build().perform();
+			  EditButton.click();
+			  WebDriverWait wt = new WebDriverWait(driver,15);
+			  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@placeholder='Group Description']"))).click();
+			  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@placeholder='Group Description']"))).clear();
+			 driver.findElement(By.xpath("//input[@placeholder='Group Description']")).sendKeys(ExpectedGroupDesc);
+			  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='ng-arrow-wrapper']"))).click();
+			  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='ng-option-label ng-star-inserted' and text()='SALES PLANNING']"))).click();
+			  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@class='greenbtn h-30' and text()=' Save ']"))).click();
+			  
+			  String ActualGroupDesc=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[2]")).getText();
+			
+			    Assert.assertEquals("Group Description is not updated", ActualGroupDesc, ExpectedGroupDesc );
+			    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			    driver.navigate().refresh();
+			 
+		 }
+		 
+		 
+		 @Given("Verify user is able to create vehicle Brand")
+		 public void verify_user_is_able_to_create_vehicle_Brand() {
+			   WebElement BrandCode=driver.findElement(By.xpath("//input[@placeholder='Brand Code']"));
+			   BrandCode.click();
+			   Random random=new Random();
+			   int randomInt=random.nextInt(10000);
+			   BrandCode.sendKeys(""+randomInt);
+			  // String ExpectedBrandCode=Integer.toString(randomInt);
+			   WebElement BrandName=driver.findElement(By.xpath("//input[@placeholder='Brand Name']"));
+			   randomInt=random.nextInt(10000);
+			   BrandName.sendKeys("Brand" +randomInt);
+			   String ExpectedBrandN=Integer.toString(randomInt);
+			  
+			   String ExpectedBrandName ="Brand".toString().concat(ExpectedBrandN);
+			   driver.findElements(By.xpath("//img[@src='../../../../assets/icons/calender.svg']")).get(0).click();
+			   driver.findElements(By.xpath("//td[@role='gridcell']")).get(5).click();
+			   driver.findElements(By.xpath("//img[@src='../../../../assets/icons/calender.svg']")).get(1).click();
+			   driver.findElements(By.xpath("//td[@role='gridcell']")).get(5).click();
+			   
+			    driver.findElement(By.xpath("//input[@formcontrolname='logo']")).sendKeys(System.getProperty("user.dir")+"/images/download.jpg");
+			    
+			    WebDriverWait wt = new WebDriverWait(driver,6);
+		 	    wt.until(ExpectedConditions.elementToBeClickable (By.xpath("//button[text()=' Save ']"))).click();
+			 	 
+			   
+			    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			    driver.navigate().refresh();
+			    
+			    String ActualBrandName=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[2]")).getText();
+			    Assert.assertEquals("Brand Name is not matching", ExpectedBrandName, ActualBrandName);
+		 }
+
+		 @Given("Verify user is able to Edit the vehicle Brand")
+		 public void verify_user_is_able_to_Edit_the_vehicle_Brand() {
+			    
+			
+			   driver.navigate().refresh();
+			   driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+				 WebElement EditIcon= driver.findElements(By.xpath("//*[@src='../../../../../assets/icons/more.svg']")).get(0);
+				 Actions builder = new Actions(driver);
+				  builder.moveToElement(EditIcon).build().perform();
+				  EditIcon.click();
+				  WebElement EditButton= driver.findElement(By.xpath("//button[@role='menuitem']"));
+				  builder.moveToElement(EditButton).build().perform();
+				  EditButton.click();
+				  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+				  driver.findElements(By.xpath("//img[@src='../../../../assets/icons/calender.svg']")).get(0).click();
+				  driver.findElements(By.xpath("//td[@role='gridcell']")).get(6).click();
+				  driver.findElements(By.xpath("//img[@src='../../../../assets/icons/calender.svg']")).get(1).click();
+				  driver.findElements(By.xpath("//td[@role='gridcell']")).get(6).click();
+				  WebDriverWait wt = new WebDriverWait(driver,6);
+				
+			 	  wt.until(ExpectedConditions.elementToBeClickable (By.xpath("//button[text()=' Update ']"))).click();
+			 	 driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			 	  driver.findElements(By.xpath("//img[@src='../../../../assets/icons/calender.svg']")).get(0).click();
+			 	  boolean dateSelected=driver.findElement(By.xpath("//td[@aria-selected='true']")).isDisplayed();
+			 	  Assert.assertTrue("Effective from date is not updated", dateSelected);
+				 /*driver.navigate().refresh();
+				  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+				 WebElement EditIcon= driver.findElements(By.xpath("//*[@src='../../../../../assets/icons/more.svg']")).get(0);
+				 Actions builder = new Actions(driver);
+				  builder.moveToElement(EditIcon).build().perform();
+				  EditIcon.click();
+				  WebElement EditButton= driver.findElement(By.xpath("//button[@role='menuitem']"));
+				  builder.moveToElement(EditButton).build().perform();
+				  EditButton.click();
+				  WebDriverWait wt = new WebDriverWait(driver,15);
+				  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@placeholder='Group Description']"))).click();
+				  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@placeholder='Group Description']"))).clear();
+				 driver.findElement(By.xpath("//input[@placeholder='Group Description']")).sendKeys(ExpectedGroupDesc);
+				  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='ng-arrow-wrapper']"))).click();
+				  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='ng-option-label ng-star-inserted' and text()='SALES PLANNING']"))).click();
+				  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@class='greenbtn h-30' and text()=' Save ']"))).click();
+				  
+				  String ActualGroupDesc=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[2]")).getText();
+				
+				    Assert.assertEquals("Group Description is not updated", ActualGroupDesc, ExpectedGroupDesc );
+				    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+				    driver.navigate().refresh();*/
+			 
+		 }
+		 
+		 @Given("Verify user is able to create vehicle Brand with unlimited Effective To date")
+		 public void verify_user_is_able_to_create_vehicle_Brand_with_unlimited_Effective_To_date() {
+			  WebElement BrandCode=driver.findElement(By.xpath("//input[@placeholder='Brand Code']"));
+			   BrandCode.click();
+			   Random random=new Random();
+			   int randomInt=random.nextInt(10000);
+			   BrandCode.sendKeys(""+randomInt);
+			  // String ExpectedBrandCode=Integer.toString(randomInt);
+			   WebElement BrandName=driver.findElement(By.xpath("//input[@placeholder='Brand Name']"));
+			   randomInt=random.nextInt(10000);
+			   BrandName.sendKeys("Brand" +randomInt);
+			   String ExpectedBrandN=Integer.toString(randomInt);
+			  
+			   String ExpectedBrandName ="Brand".toString().concat(ExpectedBrandN);
+			
+			   WebDriverWait wt = new WebDriverWait(driver,6);
+		 	    wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[text()='Unlimited']"))).click();
+		 	   WebElement TodateSelected=driver.findElements(By.xpath("//img[@src='../../../../assets/icons/calender.svg']")).get(1);
+			   Assert.assertTrue("Effective To date is not disabled", TodateSelected.isEnabled());
+			   driver.findElements(By.xpath("//img[@src='../../../../assets/icons/calender.svg']")).get(0).click();
+			   driver.findElements(By.xpath("//td[@role='gridcell']")).get(5).click();
+			   driver.findElement(By.xpath("//input[@formcontrolname='logo']")).sendKeys(System.getProperty("user.dir")+"/images/download.jpg");
+			    wt.until(ExpectedConditions.elementToBeClickable (By.xpath("//button[text()=' Save ']"))).click();
+			 	driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			    driver.navigate().refresh();
+			    
+			    String ActualBrandName=driver.findElement(By.xpath("//tbody[@role='rowgroup']/tr[1]/td[2]")).getText();
+			    Assert.assertEquals("Brand Name is not matching", ExpectedBrandName, ActualBrandName);
+		   
+		 }
+
+
+
+		 
+		 @Then("Verify user is created")
+		 public void verify_user_is_created() {
+		 	driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		 	driver.findElement(By.xpath("//input[@placeholder='Full Name']")).sendKeys("Automation");
+		 	driver.findElement(By.xpath("//input[@placeholder='Email']")).sendKeys("Automation@gmail.com");
+		 	driver.findElement(By.xpath("//input[@placeholder='User Name']")).sendKeys("TestAutomation");
+		 	driver.findElement(By.xpath("//div[@class='mat-slide-toggle-bar mat-slide-toggle-bar-no-side-margin']")).click();
+		 	driver.findElement(By.xpath("//input[@placeholder='Password']")).sendKeys("12345678");
+		 	driver.findElement(By.xpath("//input[@placeholder='Confirm Password']")).sendKeys("12345678");
+		 	driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		 	WebElement element=driver.findElement(By.xpath("//ng-select[@placeholder='Select Organization Unit']"));
+		 	 JavascriptExecutor jse = (JavascriptExecutor)driver;
+		      jse.executeScript("arguments[0].scrollIntoView()", element);
+		 	 element.click();
+		      driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		 	 WebElement Organization=driver.findElement(By.xpath("//span[@class='ng-option-label ng-star-inserted' and text()=' 001 - HEAD OFFICE ']"));
+		 	 Organization.click();
+		 	 WebElement element1=driver.findElement(By.xpath("//ng-select[@placeholder='Select Group']"));
+		      jse = (JavascriptExecutor)driver;
+		      jse.executeScript("arguments[0].scrollIntoView()", element1);
+		 	 element1.click();
+		 	 WebElement Group=driver.findElement(By.xpath("//span[@class='ng-option-label ng-star-inserted' and text()='Sales Advisor Group']"));
+		 	 Group.click();
+		 	 WebElement element2=driver.findElements(By.xpath("//div[@class='ng-select-container']")).get(1);
+		 	
+		      //jse = (JavascriptExecutor)driver;
+		      //jse.executeScript("arguments[0].scrollIntoView()", element2);
+		      WebDriverWait wt = new WebDriverWait(driver,6);
+		 	    wt.until(ExpectedConditions.elementToBeClickable (element2)).click();
+		 	 driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		 	 element2.sendKeys("TOYOTA");
+		 	 driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		 	 WebElement element3=driver.findElement(By.xpath("//ng-select[@placeholder='Select Module']"));
+		      jse = (JavascriptExecutor)driver;
+		      jse.executeScript("arguments[0].scrollIntoView()", element3);
+		 	 element3.click();
+		 	 WebElement Module=driver.findElement(By.xpath("//span[@class='ng-option-label ng-star-inserted' and text()='Sales']"));
+		 	 Module.click();
+		 	 WebElement element4=driver.findElement(By.xpath("//ng-select[@placeholder='User Type']"));
+		      jse = (JavascriptExecutor)driver;
+		      jse.executeScript("arguments[0].scrollIntoView()", element4);
+		 	 element4.click();
+		 	 WebElement UserType=driver.findElement(By.xpath("//span[@class='ng-option-label ng-star-inserted' and text()='Sales Advisor']"));
+		 	 UserType.click();
+		 	  WebElement UserSAVEbtn=driver.findElement(By.xpath("//*[text()= ' Save ']"));
+		 	  UserSAVEbtn.click();
+		 	 
+		 	  
+		 	 }
+	  
+	 
+
+}

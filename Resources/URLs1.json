@@ -1,0 +1,23 @@
+{
+ "UAT": {
+  "Email": "testdevenv3@gmail.com",
+  "Password": "Test@1234",
+  "PROFICIENT":"https://uat.proficient.live/",
+  
+   "approverEmail": "testdevenv2@gmail.com",
+   "approverPassword": "12345678",
+   
+   "rejectEmail": "testdevenv2@gmail.com",
+    "rejectPassword": "12345678",
+    
+     "AdminEmail": "testdevenv1@gmail.com",
+    "AdminPassword": "12345678"
+    
+    
+    
+    
+  
+   }
+   
+   
+ }
