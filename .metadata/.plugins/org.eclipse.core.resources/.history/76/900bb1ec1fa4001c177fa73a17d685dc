@@ -1,0 +1,203 @@
+package StepDefinitions;
+import java.io.FileReader;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Assert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import StepDefinitions.Utilities.PropertyLoader;
+import cucumber.api.Scenario;
+import io.cucumber.datatable.dependency.com.fasterxml.jackson.databind.JsonNode;
+import io.cucumber.datatable.dependency.com.fasterxml.jackson.databind.ObjectMapper;
+import io.cucumber.java.After;
+import io.cucumber.java.AfterStep;
+import io.cucumber.java.Before;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+
+
+public class Generic {
+	
+ 
+	 private boolean isChecked;
+	public WebDriver driver;
+   
+	
+    @Given("user launches browser {string}")
+    public WebDriver user_launches_browser(String browser) {
+       if(browser.equalsIgnoreCase("chrome"))
+       {
+    	   System.setProperty("webdriver.chrome.driver",System.getProperty("user.dir")+"\\drivers\\chromedriver.exe");
+    	   
+       
+       driver=new ChromeDriver();
+       driver.manage().window().maximize(); 
+       }
+       else if(browser.equalsIgnoreCase("ie"))
+       {
+    	   System.setProperty("webdriver.ie.driver",System.getProperty("user.dir")+"\\drivers\\chromedriver.exe");
+    	   driver=new InternetExplorerDriver();
+           driver.manage().window().maximize(); 
+       }
+       else if(browser.equalsIgnoreCase("ie"))
+       {
+    	   System.setProperty("webdriver.gecko.driver",System.getProperty("user.dir")+"\\drivers\\chromedriver.exe");
+    	   driver=new FirefoxDriver();
+           driver.manage().window().maximize(); 
+       }
+       
+       return driver;
+    }
+
+    @AfterStep
+	  public void takeScreenshot(Scenario scenario)
+	  {
+		  
+		  final byte [] screenshots = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+		  scenario.embed(screenshots, "image/png");
+		/*String screenshotName = scenario.getName().replaceAll(" ", "_");
+			try {
+				//This takes a screenshot from the driver at save it to the specified location
+				TakesScreenshot ts = (TakesScreenshot) driver;
+				File sourcePath = ts.getScreenshotAs(OutputType.FILE);
+				
+				//Building up the destination path for the screenshot to save
+				//Also make sure to create a folder 'screenshots' with in the cucumber-report folder
+				File destinationPath = new File(System.getProperty("user.dir") + "target/cucumber-reports/advanced-reports/screenshots/" + screenshotName + ".png");
+				
+				//Copy taken screenshot from source location to destination location
+				Files.copy(sourcePath, destinationPath);   
+
+				//This attach the specified screenshot to the test
+				//Reporter.addScreenCaptureFromPath(destinationPath.toString());
+			} 
+			catch (IOException e) {
+			} */
+	  }
+	 @After
+	 public void tearDown(Scenario scenario)
+	 {
+		 if (scenario.isFailed()) {
+		        System.out.println("Scenario is Failled Taking ScreenShot...!!!");
+		        TakesScreenshot ts = (TakesScreenshot) driver;
+		        byte[] screenshot = ts.getScreenshotAs(OutputType.BYTES);
+		        scenario.embed(screenshot, "image/png");
+		 }
+		 driver.quit();
+		
+		     
+	 }
+		 
+		 
+	  
+	@Given("user launches application {string}")
+	  public void user_launches_application(String envText) throws Throwable {
+		
+	      String url= readJsonEnvironmentFile(envText);
+	      try
+	      {
+	    	  driver.get(url);
+	    	  System.out.println("Application Launched" +url);
+	      }
+	      catch(Exception e)
+	      {
+	    	  System.out.println("Exception" + e.getMessage());
+	    	  e.printStackTrace();
+	      }
+	      
+	  }
+	
+	 
+	
+	 
+	 
+	  @Given("user loads proprty file {string}") 
+	public  void user_loads_proprty_file(String filepath) throws Throwable{
+		  
+		  PropertyLoader.getInstance().loadRunProperties(filepath);
+	  
+	}
+	  
+	  
+	  
+
+	  @Given("user provides {string},{string} and logs into application")
+	  public void user_provides_and_logs_into_application(String user, String pass) throws Throwable {
+	      try
+	      {
+	    	  user = readJsonEnvironmentFile(user);
+	    	  pass = readJsonEnvironmentFile(pass);
+	    	  WebDriverWait wt = new WebDriverWait(driver,6);
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.id("mat-input-0"))).sendKeys(user);
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.className("signinbtn"))).click();
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@name='password']"))).sendKeys(pass);
+	    	  wt.until(ExpectedConditions.elementToBeClickable(By.className("signinbtn"))).click();
+	    }
+	      catch(org.openqa.selenium.TimeoutException e)
+	      {
+	    	  System.out.println("Already logged in"); 
+	      }
+	  }
+	  //methods to read env file
+	  public static String readJsonEnvironmentFile(String token) throws Throwable
+	  {
+	  FileReader fileread = null;
+	 
+	  JsonNode jsonNode = null;
+	  String data = null;
+	  try
+	  {
+		  fileread = new FileReader("./Resources/"+PropertyLoader.getInstance().getProperty("File"));
+		  jsonNode = new ObjectMapper().readTree(fileread).get(PropertyLoader.getInstance().getProperty("Environment"));
+	  
+	       if(token.contains("."))
+	       {
+	    	   String tokenArray[]=token.split("\\.");
+	    	   if (tokenArray.length==3)
+	    	   
+	    		   data= jsonNode.get(tokenArray[0]).get(tokenArray[1]).get(tokenArray[2]).toString().replaceAll("\"", "");
+	    	  
+	    	   else
+	    	   {
+	    		   data = jsonNode.get(tokenArray[0]).get(tokenArray[1]).toString();
+	    		   if(!data.contains(","))
+	    			   data = data.replaceAll("\"", "");
+	    	   }
+	    	   
+	    		   
+	       }
+	       else
+	       {
+	    	   data = jsonNode.get(token).textValue();
+	       }
+	       if (data == null)
+	       {
+	    	   System.out.println("URL is NULL");
+	       }
+	  }
+	  catch(Exception e)
+      {
+    	  System.out.println("Exception" + e.getMessage());
+    	  e.printStackTrace();
+      }
+	  finally
+	  {
+		  fileread.close();
+	  }
+	   return data;
+	  }
+	  
+}
