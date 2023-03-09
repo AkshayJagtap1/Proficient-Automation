@@ -647,9 +647,9 @@ public void verify_User_is_able_to_create_document_approve_from_Tasklist_form_fr
 	Thread.sleep(2000);
 	wt.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@class='mat-calendar-body-cell mat-calendar-body-active ng-star-inserted']"))).click();
 	Thread.sleep(2000);
-	Thread.sleep(2000);
 	wt.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@role='combobox'])[5]"))).sendKeys(PrimaryApprover);
 	Thread.sleep(2000);
+	
 	wt.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@role='combobox'])[5]"))).sendKeys(Keys.ENTER);
 	Thread.sleep(2000);
 	wt.until(ExpectedConditions.elementToBeClickable(By.xpath("(//*[@class='mat-checkbox-inner-container'])[1]"))).click();
